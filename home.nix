@@ -24,6 +24,7 @@
 
   home.packages = [
     pkgs.direnv
+    pkgs.ssh-to-age
     pkgs.sops
     pkgs.xclip
     pkgs._1password-cli
@@ -32,6 +33,8 @@
   # Home Manager is pretty good at managing dotfiles. The primary way to manage
   # plain files is through 'home.file'.
   home.file = {
+    "/etc/nixos/configuration.nix".text = builtins.readFile ./nixos/configuration.nix;
+    "/etc/nixos/hardware-configuration.nix".text = builtins.readFile ./nixos/hardware-configuration.nix;
   };
 
   programs.kitty = {
