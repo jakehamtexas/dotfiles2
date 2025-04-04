@@ -7,8 +7,8 @@
 
     nixCats = {
       url = "github:BirdeeHub/nixCats-nvim";
-      inputs.nixpkgs.follows = "nixpkgs";
     };
+
     sops-nix = {
       url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -26,22 +26,23 @@
     home-manager,
     ...
   }: let
-    system = "x86_64-linux";
-    pkgs = nixpkgs.legacyPackages.${system};
-    wellKnown = (pkgs.callPackage ./well-known/default.nix) {};
-  in {
-    homeConfigurations."jakeh" = home-manager.lib.homeManagerConfiguration {
-      inherit pkgs;
+    linuxPkgs = nixpkgs.legacyPackages."x86_64-linux";
+    macosPkgs = nixpkgs.legacyPackages."aarch64-darwin";
 
+    jakehHome = home-manager.lib.homeManagerConfiguration {
+      pkgs = linuxPkgs;
       extraSpecialArgs = {
         inherit (self) inputs;
-        inherit wellKnown;
+        wellKnown = {
+          username = "jakeh";
+          homeDirectory = "/home/jakeh";
+        };
       };
 
       # Specify your home configuration modules here, for example,
       # the path to your home.nix.
       modules = [
-        ./home.nix
+        ./homes/jakeh-nixos.nix
         ./nvim/default.nix
         ./sops/default.nix
       ];
@@ -49,5 +50,29 @@
       # Optionally use extraSpecialArgs
       # to pass through arguments to home.nix
     };
+    macosHome = home-manager.lib.homeManagerConfiguration {
+      pkgs = macosPkgs;
+      extraSpecialArgs = {
+        inherit (self) inputs;
+        wellKnown = {
+          username = "jake";
+          homeDirectory = "/Users/jake";
+        };
+      };
+
+      # Specify your home configuration modules here, for example,
+      # the path to your home.nix.
+      modules = [
+        ./homes/jake-macos.nix
+        ./nvim/default.nix
+        ./sops/default.nix
+      ];
+
+      # Optionally use extraSpecialArgs
+      # to pass through arguments to home.nix
+    };
+  in {
+    homeConfigurations."jakeh" = jakehHome;
+    packages.aarch64-darwin.default = macosHome.activationPackage;
   };
 }
